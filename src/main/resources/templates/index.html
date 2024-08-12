@@ -15,14 +15,23 @@
             max-width: 800px;
         }
 
-        .table img {
+        .table img, #previewImage {
             max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+        }
+
+        .image-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
         }
     </style>
 </head>
 
 <body>
-<div class="container mt-5">
+<div class="row m-5">
     <h1 class="mb-4">Quản Lý Giảng Viên</h1>
     <form id="giangVienForm">
         <div class="mb-3">
@@ -63,6 +72,9 @@
                 <option value="img/5.png">Ảnh 5</option>
             </select>
         </div>
+        <div class="mb-3 image-preview-container">
+            <img id="previewImage" src="img/1.png" alt="Preview" class="mt-2">
+        </div>
         <div class="mb-3">
             <label for="luongCoBan" class="form-label">Lương Cơ Bản</label>
             <input type="number" class="form-control" id="luongCoBan" required>
@@ -93,7 +105,7 @@
         </tr>
         </thead>
         <tbody id="giangVienTableBody">
-        <!-- Dữ liệu giảng viên sẽ được thêm vào đây bằng JavaScript -->
+
         </tbody>
     </table>
 </div>
@@ -105,9 +117,13 @@
         const btnThem = document.getElementById('btnThem');
         const btnLuu = document.getElementById('btnLuu');
         const btnReset = document.getElementById('btnReset');
+        const hinhAnhSelect = document.getElementById('hinhAnh');
+        const previewImage = document.getElementById('previewImage');
 
         let isEditing = false;
-
+        hinhAnhSelect.addEventListener('change', function() {
+            previewImage.src = this.value;
+        });
         function fetchGiangVienData() {
             fetch('http://localhost:8080/api/giangvien')
                 .then(response => response.json())
@@ -157,6 +173,7 @@
             document.getElementById('hinhAnh').value = gv.hinhAnh;
             document.getElementById('luongCoBan').value = gv.luongCoBan;
             document.getElementById('ngayBatDau').value = gv.ngayBatDau;
+            previewImage.src = gv.hinhAnh;
 
             btnThem.style.display = 'none';
             btnLuu.style.display = 'inline-block';
@@ -166,6 +183,7 @@
         function resetForm() {
             form.reset();
             document.getElementById('maGiangVien').value = '';
+            previewImage.src = 'img/1.png';
             btnThem.style.display = 'inline-block';
             btnLuu.style.display = 'none';
             isEditing = false;
