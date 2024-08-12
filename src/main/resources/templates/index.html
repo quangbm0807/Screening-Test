@@ -90,6 +90,25 @@
         </div>
     </form>
     <h2 class="mt-5">Danh Sách Giảng Viên</h2>
+    <div class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên hoặc mã">
+    </div>
+    <div class="mb-3">
+        <select id="filterTrinhDo" class="form-select">
+            <option value="">Tất cả trình độ</option>
+            <option value="1">Cử nhân cao đẳng</option>
+            <option value="2">Cử nhân đại học</option>
+            <option value="3">Thạc sĩ</option>
+            <option value="4">Tiến sĩ</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <select id="filterLoaiGV" class="form-select">
+            <option value="">Tất cả loại giảng viên</option>
+            <option value="1">FULL_TIME</option>
+            <option value="2">PART_TIME</option>
+        </select>
+    </div>
     <table class="table mt-3">
         <thead>
         <tr>
@@ -121,15 +140,46 @@
         const previewImage = document.getElementById('previewImage');
 
         let isEditing = false;
-        hinhAnhSelect.addEventListener('change', function() {
+        hinhAnhSelect.addEventListener('change', function () {
             previewImage.src = this.value;
         });
+        const searchInput = document.getElementById('searchInput');
+        const filterTrinhDo = document.getElementById('filterTrinhDo');
+        const filterLoaiGV = document.getElementById('filterLoaiGV');
+
+        let allGiangVienData = [];
+
         function fetchGiangVienData() {
             fetch('http://localhost:8080/api/giangvien')
                 .then(response => response.json())
-                .then(data => populateTable(data))
+                .then(data => {
+                    allGiangVienData = data;
+                    applyFiltersAndSearch();
+                })
                 .catch(error => console.error('Error fetching data:', error));
         }
+
+        function applyFiltersAndSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const trinhDoFilter = filterTrinhDo.value;
+            const loaiGVFilter = filterLoaiGV.value;
+
+            const filteredData = allGiangVienData.filter(gv => {
+                const matchesSearch = gv.maGiangVien.toLowerCase().includes(searchTerm) ||
+                    gv.hoLot.toLowerCase().includes(searchTerm) ||
+                    gv.ten.toLowerCase().includes(searchTerm);
+                const matchesTrinhDo = trinhDoFilter === '' || gv.trinhDoHocVan.toString() === trinhDoFilter;
+                const matchesLoaiGV = loaiGVFilter === '' || gv.loaiGiangVien.toString() === loaiGVFilter;
+
+                return matchesSearch && matchesTrinhDo && matchesLoaiGV;
+            });
+
+            populateTable(filteredData);
+        }
+
+        searchInput.addEventListener('input', applyFiltersAndSearch);
+        filterTrinhDo.addEventListener('change', applyFiltersAndSearch);
+        filterLoaiGV.addEventListener('change', applyFiltersAndSearch);
 
         function populateTable(data) {
             tableBody.innerHTML = '';
@@ -142,7 +192,7 @@
                     <td>${gv.loaiGiangVien === 1 ? 'FULL_TIME' : 'PART_TIME'}</td>
                     <td>${getTrinhDoHocVanText(gv.trinhDoHocVan)}</td>
                     <td><img src="${gv.hinhAnh}" alt="${gv.hoLot}" /></td>
-                    <td>${gv.luongCoBan.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td>${gv.luongCoBan.toLocaleString('vi-VN', {style: 'currency', currency: 'VND'})}</td>
                     <td>${new Date(gv.ngayBatDau).toLocaleDateString('vi-VN')}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editGiangVien('${gv.maGiangVien}')">Sửa</button>
@@ -156,11 +206,16 @@
 
         function getTrinhDoHocVanText(id) {
             switch (id) {
-                case 1: return 'Cử nhân cao đẳng';
-                case 2: return 'Cử nhân đại học';
-                case 3: return 'Thạc sĩ';
-                case 4: return 'Tiến sĩ';
-                default: return 'Không xác định';
+                case 1:
+                    return 'Cử nhân cao đẳng';
+                case 2:
+                    return 'Cử nhân đại học';
+                case 3:
+                    return 'Thạc sĩ';
+                case 4:
+                    return 'Tiến sĩ';
+                default:
+                    return 'Không xác định';
             }
         }
 

@@ -37,17 +37,6 @@ public class GiangVienController {
     }
 
     @PutMapping("/{maGiangVien}")
-    public ResponseEntity<GiangVien> updateGiangVien(@PathVariable String maGiangVien,
-                                                     @RequestBody GiangVien giangVien) {
-        if (giangVienService.findById(maGiangVien).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        giangVien.setMaGiangVien(maGiangVien);
-        GiangVien updatedGiangVien = giangVienService.save(giangVien);
-        return ResponseEntity.ok(updatedGiangVien);
-    }
-
-    @PatchMapping("/{maGiangVien}")
     public ResponseEntity<GiangVien> patchGiangVien(@PathVariable String maGiangVien,
                                                     @RequestBody GiangVien giangVien) {
         Optional<GiangVien> existingGiangVien = giangVienService.findById(maGiangVien);
@@ -70,7 +59,7 @@ public class GiangVienController {
         if (giangVien.getHinhAnh() != null) {
             updatedGiangVien.setHinhAnh(giangVien.getHinhAnh());
         }
-        if (false) {
+        if (giangVien.getLuongCoBan()!=0) {
             updatedGiangVien.setLuongCoBan(giangVien.getLuongCoBan());
         }
         if (giangVien.getNgayBatDau() != null) {
