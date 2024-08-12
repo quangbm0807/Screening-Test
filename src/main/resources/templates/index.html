@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Giảng Viên</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .table img {
+            max-width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container mt-5">
+    <h1 class="mb-4">Quản Lý Giảng Viên</h1>
+    <form id="giangVienForm">
+        <div class="mb-3">
+            <label for="maGiangVien" class="form-label">Mã Giảng Viên</label>
+            <input type="text" class="form-control" id="maGiangVien" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="hoLot" class="form-label">Họ Lót</label>
+            <input type="text" class="form-control" id="hoLot" required>
+        </div>
+        <div class="mb-3">
+            <label for="ten" class="form-label">Tên</label>
+            <input type="text" class="form-control" id="ten" required>
+        </div>
+        <div class="mb-3">
+            <label for="loaiGiangVien" class="form-label">Loại Giảng Viên</label>
+            <select class="form-select" id="loaiGiangVien">
+                <option value="1">FULL_TIME</option>
+                <option value="2">PART_TIME</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="trinhDoHocVan" class="form-label">Trình Độ Học Vấn</label>
+            <select class="form-select" id="trinhDoHocVan">
+                <option value="1">Cử nhân cao đẳng</option>
+                <option value="2">Cử nhân đại học</option>
+                <option value="3">Thạc sĩ</option>
+                <option value="4">Tiến sĩ</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="hinhAnh" class="form-label">Hình Ảnh</label>
+            <select class="form-select" id="hinhAnh">
+                <option value="img/1.png">Ảnh 1</option>
+                <option value="img/2.png">Ảnh 2</option>
+                <option value="img/3.png">Ảnh 3</option>
+                <option value="img/4.png">Ảnh 4</option>
+                <option value="img/5.png">Ảnh 5</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="luongCoBan" class="form-label">Lương Cơ Bản</label>
+            <input type="number" class="form-control" id="luongCoBan" required>
+        </div>
+        <div class="mb-3">
+            <label for="ngayBatDau" class="form-label">Ngày Bắt Đầu</label>
+            <input type="date" class="form-control" id="ngayBatDau" required>
+        </div>
+        <div class="mb-3">
+            <button type="button" id="btnThem" class="btn btn-primary">Thêm</button>
+            <button type="button" id="btnLuu" class="btn btn-success" style="display: none;">Lưu</button>
+            <button type="button" id="btnReset" class="btn btn-secondary">Reset</button>
+        </div>
+    </form>
+    <h2 class="mt-5">Danh Sách Giảng Viên</h2>
+    <table class="table mt-3">
+        <thead>
+        <tr>
+            <th>Mã Giảng Viên</th>
+            <th>Họ Lót</th>
+            <th>Tên</th>
+            <th>Loại Giảng Viên</th>
+            <th>Trình Độ Học Vấn</th>
+            <th>Hình Ảnh</th>
+            <th>Lương Cơ Bản</th>
+            <th>Ngày Bắt Đầu</th>
+            <th>Hành Động</th>
+        </tr>
+        </thead>
+        <tbody id="giangVienTableBody">
+        <!-- Dữ liệu giảng viên sẽ được thêm vào đây bằng JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.onload = function () {
+        const form = document.getElementById('giangVienForm');
+        const tableBody = document.getElementById('giangVienTableBody');
+        const btnThem = document.getElementById('btnThem');
+        const btnLuu = document.getElementById('btnLuu');
+        const btnReset = document.getElementById('btnReset');
+
+        let isEditing = false;
+
+        function fetchGiangVienData() {
+            fetch('http://localhost:8080/api/giangvien')
+                .then(response => response.json())
+                .then(data => populateTable(data))
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function populateTable(data) {
+            tableBody.innerHTML = '';
+            data.forEach(gv => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${gv.maGiangVien}</td>
+                    <td>${gv.hoLot}</td>
+                    <td>${gv.ten}</td>
+                    <td>${gv.loaiGiangVien === 1 ? 'FULL_TIME' : 'PART_TIME'}</td>
+                    <td>${getTrinhDoHocVanText(gv.trinhDoHocVan)}</td>
+                    <td><img src="${gv.hinhAnh}" alt="${gv.hoLot}" /></td>
+                    <td>${gv.luongCoBan.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td>${new Date(gv.ngayBatDau).toLocaleDateString('vi-VN')}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editGiangVien('${gv.maGiangVien}')">Sửa</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGiangVien('${gv.maGiangVien}')">Xóa</button>
+                    </td>
+                `;
+                row.addEventListener('click', () => fillForm(gv));
+                tableBody.appendChild(row);
+            });
+        }
+
+        function getTrinhDoHocVanText(id) {
+            switch (id) {
+                case 1: return 'Cử nhân cao đẳng';
+                case 2: return 'Cử nhân đại học';
+                case 3: return 'Thạc sĩ';
+                case 4: return 'Tiến sĩ';
+                default: return 'Không xác định';
+            }
+        }
+
+        function fillForm(gv) {
+            document.getElementById('maGiangVien').value = gv.maGiangVien;
+            document.getElementById('hoLot').value = gv.hoLot;
+            document.getElementById('ten').value = gv.ten;
+            document.getElementById('loaiGiangVien').value = gv.loaiGiangVien;
+            document.getElementById('trinhDoHocVan').value = gv.trinhDoHocVan;
+            document.getElementById('hinhAnh').value = gv.hinhAnh;
+            document.getElementById('luongCoBan').value = gv.luongCoBan;
+            document.getElementById('ngayBatDau').value = gv.ngayBatDau;
+
+            btnThem.style.display = 'none';
+            btnLuu.style.display = 'inline-block';
+            isEditing = true;
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('maGiangVien').value = '';
+            btnThem.style.display = 'inline-block';
+            btnLuu.style.display = 'none';
+            isEditing = false;
+        }
+
+        function generateMaGiangVien(hoLot, ten) {
+            const words = hoLot.split(' ');
+            let code = ten.toLowerCase();
+            words.forEach(word => {
+                code += word.charAt(0).toLowerCase();
+            });
+            code += '123';
+            return code;
+        }
+
+        btnThem.onclick = function () {
+            const hoLot = document.getElementById('hoLot').value;
+            const ten = document.getElementById('ten').value;
+            const maGiangVien = generateMaGiangVien(hoLot, ten);
+            document.getElementById('maGiangVien').value = maGiangVien;
+
+            const loaiGiangVien = document.getElementById('loaiGiangVien').value;
+            const trinhDoHocVan = document.getElementById('trinhDoHocVan').value;
+            const hinhAnh = document.getElementById('hinhAnh').value;
+            const luongCoBan = document.getElementById('luongCoBan').value;
+            const ngayBatDau = document.getElementById('ngayBatDau').value;
+
+            fetch('http://localhost:8080/api/giangvien', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    maGiangVien: maGiangVien,
+                    hoLot: hoLot,
+                    ten: ten,
+                    loaiGiangVien: parseInt(loaiGiangVien),
+                    trinhDoHocVan: parseInt(trinhDoHocVan),
+                    hinhAnh: hinhAnh,
+                    luongCoBan: parseFloat(luongCoBan),
+                    ngayBatDau: ngayBatDau
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        resetForm();
+                        fetchGiangVienData();
+                    } else {
+                        console.error('Failed to submit data');
+                    }
+                })
+                .catch(error => console.error('Error submitting data:', error));
+        };
+
+        btnLuu.onclick = function () {
+            const maGiangVien = document.getElementById('maGiangVien').value;
+            const hoLot = document.getElementById('hoLot').value;
+            const ten = document.getElementById('ten').value;
+            const loaiGiangVien = document.getElementById('loaiGiangVien').value;
+            const trinhDoHocVan = document.getElementById('trinhDoHocVan').value;
+            const hinhAnh = document.getElementById('hinhAnh').value;
+            const luongCoBan = document.getElementById('luongCoBan').value;
+            const ngayBatDau = document.getElementById('ngayBatDau').value;
+
+            fetch(`http://localhost:8080/api/giangvien/${maGiangVien}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    maGiangVien: maGiangVien,
+                    hoLot: hoLot,
+                    ten: ten,
+                    loaiGiangVien: parseInt(loaiGiangVien),
+                    trinhDoHocVan: parseInt(trinhDoHocVan),
+                    hinhAnh: hinhAnh,
+                    luongCoBan: parseFloat(luongCoBan),
+                    ngayBatDau: ngayBatDau
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        resetForm();
+                        fetchGiangVienData();
+                    } else {
+                        console.error('Failed to update data');
+                    }
+                })
+                .catch(error => console.error('Error updating data:', error));
+        };
+
+        btnReset.onclick = resetForm;
+
+        window.editGiangVien = function (maGiangVien) {
+            fetch(`http://localhost:8080/api/giangvien/${maGiangVien}`)
+                .then(response => response.json())
+                .then(data => fillForm(data))
+                .catch(error => console.error('Error fetching giảng viên data:', error));
+        };
+
+        window.deleteGiangVien = function (maGiangVien) {
+            if (confirm('Bạn có chắc chắn muốn xóa giảng viên này?')) {
+                fetch(`http://localhost:8080/api/giangvien/${maGiangVien}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            fetchGiangVienData();
+                        } else {
+                            console.error('Failed to delete data');
+                        }
+                    })
+                    .catch(error => console.error('Error deleting data:', error));
+            }
+        };
+
+        fetchGiangVienData();
+    };
+</script>
+</body>
+
+</html>
