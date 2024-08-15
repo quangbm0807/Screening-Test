@@ -3,6 +3,7 @@ package com.quang.screeningtest.service;
 import com.quang.screeningtest.model.GiangVien;
 import com.quang.screeningtest.repository.GiangVienRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GiangVienService {
-
-    private final GiangVienRepository giangVienRepository;
+    @Autowired
+    private GiangVienRepository giangVienRepository;
 
     public List<GiangVien> findAll() {
         return giangVienRepository.findAll();

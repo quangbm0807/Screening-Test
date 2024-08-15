@@ -3,6 +3,7 @@ package com.quang.screeningtest.controller;
 import com.quang.screeningtest.model.GiangVien;
 import com.quang.screeningtest.service.GiangVienService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +15,8 @@ import java.util.Optional;
 @RequestMapping("/api/giangvien")
 @RequiredArgsConstructor
 public class GiangVienController {
-
-    private final GiangVienService giangVienService;
+    @Autowired
+    private GiangVienService giangVienService;
 
     @GetMapping
     public ResponseEntity<List<GiangVien>> getAllGiangViens() {
@@ -59,7 +60,7 @@ public class GiangVienController {
         if (giangVien.getHinhAnh() != null) {
             updatedGiangVien.setHinhAnh(giangVien.getHinhAnh());
         }
-        if (giangVien.getLuongCoBan()!=0) {
+        if (giangVien.getLuongCoBan() != 0) {
             updatedGiangVien.setLuongCoBan(giangVien.getLuongCoBan());
         }
         if (giangVien.getNgayBatDau() != null) {
